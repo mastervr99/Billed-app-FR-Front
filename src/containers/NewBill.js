@@ -23,6 +23,7 @@ export default class NewBill {
 
     const fileExtension = fileName.split('.').pop().toLowerCase();
 
+    //[Bug Hunt] - Bills
     if (fileExtension !== 'jpg' && fileExtension !== 'jpeg' && fileExtension !== 'png') {
       alert('Seuls les fichiers .jpg, .jpeg et .png sont autorisés.');
       return;
