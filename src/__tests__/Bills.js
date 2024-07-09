@@ -74,5 +74,51 @@ describe("Given I am connected as an employee", () => {
     });
   })
 
+  describe('When I am on Bills Page and I click on the icon eye', () => {
+    test('A modal should open', () => {
 
+      const onNavigate = (pathname) => {
+        document.body.innerHTML = ROUTES({ pathname })
+      }
+      const store = jest.fn();
+      
+      document.body.innerHTML = BillsUI({ data: bills });
+      const displayed_bills = new Bills({document, onNavigate, store, localStorageMock})
+
+      const iconEye = screen.getAllByTestId('icon-eye')
+
+      const handleClickIconEye = jest.fn(displayed_bills.handleClickIconEye(iconEye[0]))
+      
+      
+      iconEye[0].addEventListener('click', handleClickIconEye)
+      userEvent.click(iconEye[0])
+      expect(handleClickIconEye).toHaveBeenCalled()
+
+      const modale = screen.getAllByText('Justificatif')
+      expect(modale).toBeTruthy()
+
+    })
+  })
+
+   //******************************************************** */
+
+  // test d'intégration GET
+  describe("When I navigate to Bills page", () => {
+    test("fetches bills from mock API GET", async () => {
+      Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+      window.localStorage.setItem('user', JSON.stringify({
+        type: 'Employee'
+      }))
+      const root = document.createElement("div")
+      root.setAttribute("id", "root")
+      document.body.append(root)
+      router()
+      window.onNavigate(ROUTES_PATH.Bills)
+      await waitFor(() => screen.getByText("Mes notes de frais"))
+      const contentPending  = await screen.getAllByText("En attente")
+      expect(contentPending).toBeTruthy()
+      const contentRefused  = await screen.getAllByText("Refused")
+      expect(contentRefused).toBeTruthy()
+    })
+  })
 })
