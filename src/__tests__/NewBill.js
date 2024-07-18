@@ -22,9 +22,9 @@ describe("Given I am connected as an employee", () => {
     })
     
     test("Then bill icon in vertical layout should be highlighted", async () => {
-      Object.defineProperty(window, "localStorage", {
-        value: localStorageMock,
-      });
+      // Object.defineProperty(window, "localStorage", {
+      //   value: localStorageMock,
+      // });
       window.localStorage.setItem(
         "user",
         JSON.stringify({
@@ -41,7 +41,52 @@ describe("Given I am connected as an employee", () => {
       expect(windowIcon.classList.contains("active-icon")).toBeTruthy();
     });
 
-  })
+  });
+
+  describe("When I am on NewBill Page znd i submit a wrong filetype", () => {
+    test("Then it should not be accepted", async () => {
+      const html = NewBillUI()
+      document.body.innerHTML = html
+
+      const file = new File(["dummy content"], "example.gif", {
+        type: "image/gif",
+      });
+
+      Object.defineProperty(window, "localStorage", {
+        value: {
+          getItem: jest.fn(() => null),
+          setItem: jest.fn(() => null),
+        },
+        writable: true,
+      });
+
+      const onNavigate = (pathname) => {
+        document.body.innerHTML = ROUTES({ pathname });
+      };
+
+      const store = jest.fn();
+
+      const newBill = new NewBill({
+        document,
+        onNavigate,
+        store,
+        localStorage: window.localStorage,
+      });
+
+      newBill.handleChangeFile = jest.fn(newBill.handleChangeFile);
+      
+      const inputFile = screen.getByTestId("file");
+      inputFile.addEventListener('change', newBill.handleChangeFile);
+
+      fireEvent.change(inputFile, { target: { files: [file] } });
+     
+      expect(newBill.handleChangeFile).toHaveBeenCalled();
+      await waitFor(() => screen.getByText("Seuls les fichiers .jpg, .jpeg et .png sont autorisés."));
+
+      expect(screen.queryByText("Seuls les fichiers .jpg, .jpeg et .png sont autorisés.")).toBeTruthy();
+      // expect(document.body.innerHTML).toBeFalsy();
+    });
+  });
 
   describe("When I am on NewBill Page and i fill all fields correctly", () => {
     
@@ -118,8 +163,10 @@ describe("Given I am connected as an employee", () => {
 
       const handleSubmit = jest.fn(newBill.handleSubmit);
       newBill.updateBill = jest.fn().mockResolvedValue({});
+      const billsSpy = jest.spyOn(mockStore.bills(), "update")
       form.addEventListener("submit", handleSubmit);
       fireEvent.submit(form);
+      expect(billsSpy).toHaveBeenCalled()
       expect(handleSubmit).toHaveBeenCalled();
       expect(window.localStorage.setItem).toHaveBeenCalled();
       // expect(window.localStorage.setItem).toHaveBeenCalledWith(
@@ -135,12 +182,15 @@ describe("Given I am connected as an employee", () => {
       //   })
       // );
 
-      // expect(screen.queryByText("Vol paris dubai")).toBeTruthy();
     });
 
     test("It should renders Bills page", () => {
       expect(screen.queryByText("Mes notes de frais")).toBeTruthy();
     })
-  })
+
+    test("It should shows the new bill on Bills page", () => {
+      expect(screen.queryByText("Vol paris dubai")).toBeTruthy();
+    })
+  });
  
-})
+});
