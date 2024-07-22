@@ -17,15 +17,28 @@ export default class NewBill {
   }
   handleChangeFile = e => {
     e.preventDefault()
-    const file = this.document.querySelector(`input[data-testid="file"]`).files[0]
+    const fileInput = this.document.querySelector(`input[data-testid="file"]`);
+    const file = fileInput.files[0]
+    console.log('Selected file:', file);
     const filePath = e.target.value.split(/\\/g)
     const fileName = filePath[filePath.length-1]
+    console.log('File name:', fileName);
 
     const fileExtension = fileName.split('.').pop().toLowerCase();
+    console.log('File extension:', fileExtension);
+
+    const existingErrorMessage = document.getElementById('errorMessage');
+    if (existingErrorMessage) {
+        existingErrorMessage.remove();
+    }
 
     //[Bug Hunt] - Bills
     if (fileExtension !== 'jpg' && fileExtension !== 'jpeg' && fileExtension !== 'png') {
-      alert('Seuls les fichiers .jpg, .jpeg et .png sont autorisés.');
+      const errorMessage = document.createElement('p');
+      errorMessage.id = 'errorMessage';
+      errorMessage.textContent = 'Seuls les fichiers .jpg, .jpeg et .png sont autorisés.';
+      fileInput.parentNode.insertBefore(errorMessage, fileInput.nextSibling);
+      fileInput.value = '';
       return;
     }
 
@@ -49,6 +62,7 @@ export default class NewBill {
         this.fileName = fileName
       }).catch(error => console.error(error))
   }
+
   handleSubmit = e => {
     e.preventDefault()
     console.log('e.target.querySelector(`input[data-testid="datepicker"]`).value', e.target.querySelector(`input[data-testid="datepicker"]`).value)

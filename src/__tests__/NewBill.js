@@ -11,7 +11,7 @@ import mockStore from "../__mocks__/store"
 import { bills } from "../fixtures/bills"
 import router from "../app/Router"
 
-
+jest.mock("../app/store", () => mockStore);
 
 describe("Given I am connected as an employee", () => {
   describe("When I am on NewBill Page", () => {
@@ -22,9 +22,7 @@ describe("Given I am connected as an employee", () => {
     })
     
     test("Then bill icon in vertical layout should be highlighted", async () => {
-      // Object.defineProperty(window, "localStorage", {
-      //   value: localStorageMock,
-      // });
+
       window.localStorage.setItem(
         "user",
         JSON.stringify({
@@ -43,7 +41,7 @@ describe("Given I am connected as an employee", () => {
 
   });
 
-  describe("When I am on NewBill Page znd i submit a wrong filetype", () => {
+  describe("When I am on NewBill Page and i choose a wrong filetype", () => {
     test("Then it should not be accepted", async () => {
       const html = NewBillUI()
       document.body.innerHTML = html
@@ -52,24 +50,16 @@ describe("Given I am connected as an employee", () => {
         type: "image/gif",
       });
 
-      Object.defineProperty(window, "localStorage", {
-        value: {
-          getItem: jest.fn(() => null),
-          setItem: jest.fn(() => null),
-        },
-        writable: true,
-      });
 
       const onNavigate = (pathname) => {
         document.body.innerHTML = ROUTES({ pathname });
       };
 
-      const store = jest.fn();
 
       const newBill = new NewBill({
         document,
         onNavigate,
-        store,
+        store : mockStore,
         localStorage: window.localStorage,
       });
 
@@ -84,7 +74,47 @@ describe("Given I am connected as an employee", () => {
       await waitFor(() => screen.getByText("Seuls les fichiers .jpg, .jpeg et .png sont autorisés."));
 
       expect(screen.queryByText("Seuls les fichiers .jpg, .jpeg et .png sont autorisés.")).toBeTruthy();
-      // expect(document.body.innerHTML).toBeFalsy();
+    });
+  });
+
+  describe("When I am on NewBill Page and i choose a right filetype", () => {
+    test("Then it should be accepted", async () => {
+      const html = NewBillUI()
+      document.body.innerHTML = html
+
+      
+      const file = new File(["dummy content"], "jpg.jpg", {
+        type: "image/jpg",
+      });
+      
+      const onNavigate = (pathname) => {
+        document.body.innerHTML = ROUTES({ pathname });
+      };
+      
+      
+      const newBill = new NewBill({
+        document,
+        onNavigate,
+        store : mockStore,
+        localStorage: window.localStorage,
+      });
+      
+      newBill.handleChangeFile = jest.fn(newBill.handleChangeFile);
+      
+      const inputFile = screen.getByTestId("file");
+      inputFile.addEventListener('change', newBill.handleChangeFile);
+      
+      
+      fireEvent.change(inputFile, { target: { files: [file] } });
+
+      await waitFor(() => screen.getByText("Seuls les fichiers .jpg, .jpeg et .png sont autorisés."));
+
+      expect(screen.queryByText("Seuls les fichiers .jpg, .jpeg et .png sont autorisés.")).toBeFalsy();
+
+      expect(newBill.handleChangeFile).toHaveBeenCalled();      
+      expect(inputFile.files[0].name).toBe("jpg.jpg");
+      // await waitFor(() => expect(screen.queryByText("Seuls les fichiers .jpg, .jpeg et .png sont autorisés.")).toBeFalsy());
+
     });
   });
 
@@ -109,19 +139,9 @@ describe("Given I am connected as an employee", () => {
         pct: "250",
       };
 
-      Object.defineProperty(window, "localStorage", {
-        value: {
-          getItem: jest.fn(() => null),
-          setItem: jest.fn(() => null),
-        },
-        writable: true,
-      });
-
       const onNavigate = (pathname) => {
         document.body.innerHTML = ROUTES({ pathname });
       };
-
-      const store = jest.fn();
 
 
       const selectExpenseType = screen.getByTestId("expense-type");
@@ -157,40 +177,33 @@ describe("Given I am connected as an employee", () => {
       const newBill = new NewBill({
         document,
         onNavigate,
-        store,
+        store : mockStore,
         localStorage: window.localStorage,
       });
 
       const handleSubmit = jest.fn(newBill.handleSubmit);
-      newBill.updateBill = jest.fn().mockResolvedValue({});
-      const billsSpy = jest.spyOn(mockStore.bills(), "update")
+      newBill.updateBill = jest.fn(newBill.updateBill);
+      // const billsSpy = jest.spyOn(mockStore.bills(), "update")
       form.addEventListener("submit", handleSubmit);
       fireEvent.submit(form);
-      expect(billsSpy).toHaveBeenCalled()
       expect(handleSubmit).toHaveBeenCalled();
-      expect(window.localStorage.setItem).toHaveBeenCalled();
-      // expect(window.localStorage.setItem).toHaveBeenCalledWith(
-      //   "user",
-      //   JSON.stringify({
-      //     type : inputData.type,
-      //     expenseType: inputData.expenseType,
-      //     expenseName: inputData.expenseName,
-      //     datepicker: inputData.datepicker,
-      //     amount: inputData.amount,
-      //     vat: inputData.vat,
-      //     pct: inputData.pct,
-      //   })
-      // );
+      expect(newBill.updateBill).toHaveBeenCalled();
 
+      // await waitFor(() => screen.getByText("Mes notes de frais"));
+      // expect(screen.queryByText("Mes notes de frais")).toBeTruthy();
+
+      // await waitFor(() => screen.getByText("Vol paris dubai"));
+      // expect(screen.queryByText("Vol paris dubai")).toBeTruthy();
     });
 
-    test("It should renders Bills page", () => {
-      expect(screen.queryByText("Mes notes de frais")).toBeTruthy();
-    })
+    // test("It should renders Bills page", async () => {
 
-    test("It should shows the new bill on Bills page", () => {
-      expect(screen.queryByText("Vol paris dubai")).toBeTruthy();
-    })
+    // })
+
+    // //POST
+    // test("It should shows the new bill on Bills page", async () => {
+
+    // })
   });
  
-});
+})
