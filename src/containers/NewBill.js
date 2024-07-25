@@ -19,13 +19,13 @@ export default class NewBill {
     e.preventDefault()
     const fileInput = this.document.querySelector(`input[data-testid="file"]`);
     const file = fileInput.files[0]
-    console.log('Selected file:', file);
+    console.log('Selected file: '+ file);
     const filePath = e.target.value.split(/\\/g)
     const fileName = filePath[filePath.length-1]
-    console.log('File name:', fileName);
+    console.log('File name: '+ fileName);
 
-    const fileExtension = fileName.split('.').pop().toLowerCase();
-    console.log('File extension:', fileExtension);
+    const fileExtension = fileInput.files[0].name.split('.').pop().toLowerCase();
+    console.log('File extension: '+ fileExtension);
 
     const existingErrorMessage = document.getElementById('errorMessage');
     if (existingErrorMessage) {

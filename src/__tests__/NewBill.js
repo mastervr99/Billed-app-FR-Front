@@ -15,11 +15,6 @@ jest.mock("../app/store", () => mockStore);
 
 describe("Given I am connected as an employee", () => {
   describe("When I am on NewBill Page", () => {
-    test("Then ...", () => {
-      const html = NewBillUI()
-      document.body.innerHTML = html
-      //to-do write assertion
-    })
     
     test("Then bill icon in vertical layout should be highlighted", async () => {
 
@@ -107,20 +102,18 @@ describe("Given I am connected as an employee", () => {
       
       fireEvent.change(inputFile, { target: { files: [file] } });
 
-      await waitFor(() => screen.getByText("Seuls les fichiers .jpg, .jpeg et .png sont autorisés."));
-
-      expect(screen.queryByText("Seuls les fichiers .jpg, .jpeg et .png sont autorisés.")).toBeFalsy();
-
+      
       expect(newBill.handleChangeFile).toHaveBeenCalled();      
       expect(inputFile.files[0].name).toBe("jpg.jpg");
-      // await waitFor(() => expect(screen.queryByText("Seuls les fichiers .jpg, .jpeg et .png sont autorisés.")).toBeFalsy());
-
+      expect(screen.queryByText("Seuls les fichiers .jpg, .jpeg et .png sont autorisés.")).toBeNull();
+      
     });
   });
 
+  //POST TEST
   describe("When I am on NewBill Page and i fill all fields correctly", () => {
     
-    test("It should create a new bill in app", async () => {
+    test("It should create a new bill on the Bills page", async () => {
 
       const html = NewBillUI()
       document.body.innerHTML = html
@@ -189,21 +182,12 @@ describe("Given I am connected as an employee", () => {
       expect(handleSubmit).toHaveBeenCalled();
       expect(newBill.updateBill).toHaveBeenCalled();
 
-      // await waitFor(() => screen.getByText("Mes notes de frais"));
-      // expect(screen.queryByText("Mes notes de frais")).toBeTruthy();
+      await waitFor(() => screen.getByText("Mes notes de frais"));
+      expect(screen.queryByText("Mes notes de frais")).toBeTruthy();
 
-      // await waitFor(() => screen.getByText("Vol paris dubai"));
-      // expect(screen.queryByText("Vol paris dubai")).toBeTruthy();
+      await waitFor(() => screen.getByText("Vol paris dubai"));
+      expect(screen.queryByText("Vol paris dubai")).toBeTruthy();
     });
-
-    // test("It should renders Bills page", async () => {
-
-    // })
-
-    // //POST
-    // test("It should shows the new bill on Bills page", async () => {
-
-    // })
   });
  
 })
